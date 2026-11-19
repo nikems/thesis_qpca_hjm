@@ -1,9 +1,0 @@
-table,semantics,column,best_bit_order,tvd,chi2_p
-"Table III, iteration 1 (input |+>)",Qiskit 0.7 (legacy),simulator,q1 q0 q2,0.012004084627217188,0.22716912699583086
-"Table III, iteration 1 (input |+>)",modern,simulator,q1 q0 q2,0.5806753783366416,0.0
-"Table III, iteration 1 (input |+>)",legacy,chip vs ideal,,0.26542205337721714,
-"Table V, 3-bit QPE",Qiskit 0.7 (legacy),simulator,q2 q1 q0 q3,0.005459405108992363,0.19552826667938888
-"Table V, 3-bit QPE",modern,simulator,q2 q0 q1 q3,0.9082492127658847,0.0
-"Table V, 3-bit QPE",legacy,chip vs ideal,,0.6754775422649771,
-Table V: wrong U^4 vs correct,legacy,P(k),,4.820462047418553e-07,
-Table V: post-selected eigenvector,legacy,F with u1,Martin 0.9716 / correct 0.99985,,
