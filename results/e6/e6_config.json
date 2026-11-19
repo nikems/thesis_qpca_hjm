@@ -1,0 +1,44 @@
+{
+  "experiment": "e6",
+  "run_date_utc": "2026-11-19T14:51:57+00:00",
+  "software": {
+    "python": "3.11.16",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "qiskit": "2.5.2",
+    "qiskit_aer": "0.17.2",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "matplotlib": "3.11.1",
+    "qiskit_ibm_runtime": "0.52.1"
+  },
+  "matrix": "ecb_2x2",
+  "reference_V_bp": 3.858447908906548,
+  "n_list": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "shots": 8192,
+  "R": 20,
+  "R_noisy": 10,
+  "n_noisy": {
+    "yorktown": [
+      2,
+      3
+    ],
+    "fez": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "t": "2 pi (1 - 2^-n) (no wrap-around)",
+  "input": "purified rho (mixed state)",
+  "seeds": "ideal 6,000,000 + 10,000 n + 100 basis + r ; noisy transpiler 100 + r, simulator 7,000 + 100 n + 10 basis + r",
+  "rebuild": "lambda_1 = lambda_hat Tr(C), lambda_2 = Tr(C) - lambda_1, u_2 = u_1 rotated 90 deg"
+}

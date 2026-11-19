@@ -1,0 +1,186 @@
+
+==============================================================================
+E2.PRE  WHAT THE SPECTRUM PREDICTS FOR QPE  (classical, before any circuit)
+==============================================================================
+   martin_2x2 lambda = [0.8576, 0.1424]  gap = 0.715  -> phase qubits to separate lambda_1/lambda_2: 2   wrap-around with t = 2 pi for n = [1]
+   ecb_2x2    lambda = [0.9061, 0.0939]  gap = 0.812  -> phase qubits to separate lambda_1/lambda_2: 2   wrap-around with t = 2 pi for n = [1, 2]
+   -> ECB: lambda_1 = 0.906 > 0.875 = 1 - 2^-3, so with Martin's t = 2 pi it wraps already at n = 2;
+      Martin's lambda_1 = 0.858 < 0.875 does not. All QPE runs below use t = 2 pi (1 - 2^-n).
+
+==============================================================================
+E2.0  VERIFICATION OF THE QPE CIRCUIT
+==============================================================================
+   eigenphase exactly 3/8, n=3: histogram = [0, 0, 0, 2000, 0, 0, 0, 0]  (all shots in k=3 -> OK)
+   martin_2x2 n=2 input=vector  : max|statevector - theory| = ~0 (< 10^-12)
+   martin_2x2 n=2 input=purified: max|statevector - theory| = ~0 (< 10^-12)
+   martin_2x2 n=5 input=vector  : max|statevector - theory| = ~0 (< 10^-12)
+   martin_2x2 n=5 input=purified: max|statevector - theory| = ~0 (< 10^-12)
+   ecb_2x2 n=2 input=vector  : max|statevector - theory| = ~0 (< 10^-12)
+   ecb_2x2 n=2 input=purified: max|statevector - theory| = ~0 (< 10^-12)
+   ecb_2x2 n=5 input=vector  : max|statevector - theory| = ~0 (< 10^-12)
+   ecb_2x2 n=5 input=purified: max|statevector - theory| = ~0 (< 10^-12)
+   theory: P(k) = sum_j w_j |A_n(k|phi_j)|^2, A_n(k|phi) = 2^-n sum_x exp(2 pi i x (phi - k/2^n))
+
+==============================================================================
+E2.1  REALISING U = e^{i t rho} AND ITS COST
+==============================================================================
+   martin_2x2: rho = 0.5000 I + 0.3288 X + 0.1407 Z   (c_P = Tr(rho P)/2: only the ENTRIES of rho are needed)
+      closed form e^(it rho) = e^(it/2)[cos(t r) I + i sin(t r) (n.sigma)], r = 0.3576: max|closed - expm| = ~0 (< 10^-12)  (single-qubit gate, NO Trotter error)
+      controlled-U^(2^k), k=0..7, transpiled (rz,sx,x,cx; opt 3): CX = [2, 2, 2, 2, 2, 2, 2, 2]  depth = [11, 11, 11, 11, 11, 11, 11, 11]
+   ecb_2x2: rho = 0.5000 I + 0.3693 X + -0.1688 Z   (c_P = Tr(rho P)/2: only the ENTRIES of rho are needed)
+      closed form e^(it rho) = e^(it/2)[cos(t r) I + i sin(t r) (n.sigma)], r = 0.4061: max|closed - expm| = ~0 (< 10^-12)  (single-qubit gate, NO Trotter error)
+      controlled-U^(2^k), k=0..7, transpiled (rz,sx,x,cx; opt 3): CX = [2, 2, 2, 2, 2, 2, 2, 2]  depth = [11, 11, 11, 11, 11, 11, 11, 11]
+   -> for one qubit every power U^(2^k) is again a single-qubit rotation: controlled cost <= 2 CX, independent of k.
+      Realised by REPETITION of U, the same QPE would need 2^n - 1 applications of C-U (oracle calls) per shot.
+
+   Density-matrix exponentiation (Lloyd et al. 2014): with K copies of rho and partial swaps,
+   sigma -> Tr_1[ e^{i S d}(rho (x) sigma) e^{-i S d} ] = e^{i rho d} sigma e^{-i rho d} + O(d^2),  d = t/K
+   martin_2x2: trace distance vs copies K: K=10: 0.21, K=30: 0.14, K=100: 0.060, K=300: 0.022, K=1000: 0.0069, K=3000: 0.0023, K=10000: 0.00070   slope -0.85 (theory -1);  K(eps=0.01, t=2pi) ~ 588
+      copies of rho for a full n-bit QPE (eps = 0.01 per controlled power): n=2: 2940, n=4: 49980, n=6: 802,620, n=8: 12,844,860  (grows as 4^n)
+   ecb_2x2: trace distance vs copies K: K=10: 0.20, K=30: 0.13, K=100: 0.051, K=300: 0.019, K=1000: 0.0057, K=3000: 0.0019, K=10000: 0.00058   slope -0.87 (theory -1);  K(eps=0.01, t=2pi) ~ 485
+      copies of rho for a full n-bit QPE (eps = 0.01 per controlled power): n=2: 2425, n=4: 41225, n=6: 662,025, n=8: 10,594,825  (grows as 4^n)
+   -> DME removes the need to know U, but costs ~4^n copies (and controlled partial swaps): it is the
+      origin of the 'exponential speed-up' assumptions and of the practical limits discussed in E10.
+
+==============================================================================
+E2.2  EIGENVALUE ESTIMATION, eigenvector input, t = 2 pi (1-2^-n); R=20 seeds per (n, S)
+==============================================================================
+
+   [martin_2x2]  lambda_1 = 0.857643
+     n  qubits depth  CX | S=16384: mean|err|  [95% CI]           success   floor(quant.)  | success at S=64
+     1      2    10    2 | 0.14236 [0.14236,0.14236]  100.0%   0.14236      | 100.0%
+     2      3    24    7 | 0.14236 [0.14236,0.14236]  100.0%   0.14236      | 100.0%
+     3      4    30   12 | 0.00050 [0.00050,0.00050]  100.0%   0.00050      | 100.0%
+     4      5    41   20 | 0.00902 [0.00902,0.00902]  100.0%   0.00902      | 100.0%
+     5      6    55   30 | 0.01332 [0.01332,0.01332]  100.0%   0.01332      | 100.0%
+     6      7    65   42 | 0.00050 [0.00050,0.00050]  100.0%   0.00050      | 100.0%
+     7      8    77   56 | 0.00062 [0.00062,0.00062]  100.0%   0.00062      | 100.0%
+     8      9    90   72 | 0.00118 [0.00118,0.00118]  100.0%   0.00118      | 100.0%
+
+   [ecb_2x2]  lambda_1 = 0.906061
+     n  qubits depth  CX | S=16384: mean|err|  [95% CI]           success   floor(quant.)  | success at S=64
+     1      2    10    2 | 0.09394 [0.09394,0.09394]  100.0%   0.09394      | 100.0%
+     2      3    24    7 | 0.09394 [0.09394,0.09394]  100.0%   0.09394      | 100.0%
+     3      4    31   12 | 0.04892 [0.04892,0.04892]  100.0%   0.04892      | 100.0%
+     4      5    42   20 | 0.02727 [0.02727,0.02727]  100.0%   0.02727      | 100.0%
+     5      6    53   30 | 0.00283 [0.00283,0.00283]  100.0%   0.00283      | 100.0%
+     6      7    63   42 | 0.00130 [0.00130,0.00130]  100.0%   0.00130      | 100.0%
+     7      8    77   56 | 0.00055 [0.00055,0.00055]  100.0%   0.00055      | 100.0%
+     8      9    88   72 | 0.00018 [0.00018,0.00018]  100.0%   0.00018      | 100.0%
+
+   distribution check (S=16384, seed 0): empirical histogram vs exact P(k)
+     martin_2x2 n=3: TVD = 0.0000, chi-square p = 0.665  -> consistent with theory
+     martin_2x2 n=6: TVD = 0.0006, chi-square p = 0.931  -> consistent with theory
+     ecb_2x2 n=3: TVD = 0.0050, chi-square p = 0.185  -> consistent with theory
+     ecb_2x2 n=6: TVD = 0.0030, chi-square p = 0.261  -> consistent with theory
+   -> with the eigenvector as input the mode is the best bin in 100% of the runs already at S = 64:
+      the eigenvalue error equals the grid floor (<= 1/(2(2^n-1))) and does not improve with S;
+      shots only reduce the distance between the sampled histogram and P(k) (TVD ~ S^-1/2, panel b).
+      The floor is not monotone in n because the grid k/(2^n-1) is not nested.
+      CX count grows ~ n^2 (inverse QFT), depth ~ n^2, qubits = n + 1.
+
+   Wrap-around check with Martin's t = 2 pi (ECB, lambda_1 = 0.906, S = 8192):
+     martin_2x2 t=2pi          lambda_hat(n=1..8) = 0.000, 0.750, 0.875, 0.875, 0.844, 0.859, 0.859, 0.859
+     martin_2x2 t=2pi(1-2^-n)  lambda_hat(n=1..8) = 1.000, 1.000, 0.857, 0.867, 0.871, 0.857, 0.858, 0.859
+     ecb_2x2    t=2pi          lambda_hat(n=1..8) = 0.000, 0.000, 0.875, 0.875, 0.906, 0.906, 0.906, 0.906
+     ecb_2x2    t=2pi(1-2^-n)  lambda_hat(n=1..8) = 1.000, 1.000, 0.857, 0.933, 0.903, 0.905, 0.906, 0.906
+   -> with t = 2 pi the ECB eigenvalue 0.906 is read as 0.000 for n = 1, 2 (rounds to 2^n = 0 mod 2^n).
+
+==============================================================================
+E2.3  qPCA WITH THE MIXED STATE rho AS INPUT (purification, S=8192, R=20)
+==============================================================================
+   The system register is prepared in rho itself (Cholesky purification, no eigen-decomposition).
+   QPE then samples eigenvalue j with probability lambda_j; post-selecting the dominant bin k* leaves
+   the system close to u_1. Fidelity: exact (statevector) and by 1-qubit tomography (X,Y,Z, S shots each).
+
+   [martin_2x2]  lambda = [0.8576 0.1424]
+     n  qubits  CX  | lambda_hat  |err|    p(k*) theory/emp   F exact   F tomography mean [95% CI]
+     1      3    3  | 1.0000   0.1424  0.822/0.824       0.9915    0.9914 [0.9899,0.9929]
+     2      4    8  | 1.0000   0.1424  0.480/0.482       0.9783    0.9783 [0.9769,0.9797]
+     3      5   13  | 0.8571   0.0005  0.858/0.857       1.0000    0.9985 [0.9975,0.9994]
+     4      6   21  | 0.8667   0.0090  0.808/0.809       0.9998    0.9982 [0.9972,0.9993]
+     5      7   31  | 0.8710   0.0133  0.473/0.473       0.9996    0.9987 [0.9977,0.9996]
+     6      8   43  | 0.8571   0.0005  0.855/0.856       1.0000    0.9995 [0.9990,0.9999]
+     7      9   57  | 0.8583   0.0006  0.840/0.839       1.0000    0.9982 [0.9972,0.9993]
+
+   [ecb_2x2]  lambda = [0.9061 0.0939]
+     n  qubits  CX  | lambda_hat  |err|    p(k*) theory/emp   F exact   F tomography mean [95% CI]
+     1      3    3  | 1.0000   0.0939  0.889/0.888       0.9977    0.9968 [0.9955,0.9981]
+     2      4    8  | 1.0000   0.0939  0.709/0.709       0.9931    0.9935 [0.9917,0.9953]
+     3      5   13  | 0.8571   0.0489  0.611/0.611       0.9975    0.9968 [0.9954,0.9981]
+     4      6   21  | 0.9333   0.0273  0.507/0.503       0.9983    0.9981 [0.9971,0.9990]
+     5      7   31  | 0.9032   0.0028  0.883/0.883       1.0000    0.9981 [0.9972,0.9991]
+     6      8   43  | 0.9048   0.0013  0.886/0.886       1.0000    0.9988 [0.9981,0.9994]
+     7      9   57  | 0.9055   0.0005  0.892/0.890       1.0000    0.9989 [0.9979,0.9999]
+     spectrum histogram martin_2x2 n=3: chi-square p vs theory = 0.769
+     spectrum histogram martin_2x2 n=5: chi-square p vs theory = 0.054
+     spectrum histogram martin_2x2 n=7: chi-square p vs theory = 0.322
+     spectrum histogram ecb_2x2 n=3: chi-square p vs theory = 0.870
+     spectrum histogram ecb_2x2 n=5: chi-square p vs theory = 0.797
+     spectrum histogram ecb_2x2 n=7: chi-square p vs theory = 0.470
+   -> the dominant bin collects ~lambda_1 of the shots; the post-selected state is a MIXTURE of u_1 and the
+      leakage of u_2 into bin k*: fidelity -> 1 as n grows (leakage ~ 1/(2^n gap)^2).
+
+==============================================================================
+E2.4  MARTIN'S ITERATIVE PROTOCOL with correct gates (n=2, input |+>, S=8192, R=10)
+==============================================================================
+   each iteration: QPE -> post-select the most frequent phase bin -> tomography (X,Y,Z) of the
+   eigenvector qubit -> dominant eigenvector of the estimate -> input of the next iteration.
+   martin_2x2 t=2pi        k*=3  F(iter 1..6) shots: 0.9941, 0.9991, 0.9998, 0.9999, 0.9999, 0.9999   exact: [0.9948, 0.9994, 0.9999, 1.0, 1.0, 1.0]
+   martin_2x2 t=2pi(1-1/4) k*=3  F(iter 1..6) shots: 0.9948, 0.9991, 0.9998, 0.9999, 0.9998, 0.9999   exact: [0.9944, 0.9993, 0.9999, 1.0, 1.0, 1.0]
+   ecb_2x2    t=2pi        k*=0  F(iter 1..6) shots: 0.9551, 0.9536, 0.9548, 0.9547, 0.9553, 0.9562   exact: [0.9548, 0.9548, 0.9548, 0.9548, 0.9548, 0.9548]
+   ecb_2x2    t=2pi(1-1/4) k*=3  F(iter 1..6) shots: 0.9965, 0.9998, 0.9999, 0.9999, 0.9999, 0.9999   exact: [0.9968, 0.9998, 1.0, 1.0, 1.0, 1.0]
+   Martin's chip (Table I, z-basis magnitudes only): F = [0.9661, 0.9597, 0.9666, 0.9434]
+   -> with correct gates the protocol converges in 1-2 iterations to F ~ 0.99+ for Martin's matrix;
+      for ECB with t = 2pi the dominant eigenvalue falls in the WRAPPED bin 0 together with lambda_2,
+      so post-selection cannot separate the two components (F stays low); t = 2pi(1-2^-n) fixes it.
+
+==============================================================================
+E2.5  MARTIN'S PUBLISHED 2x2 ESTIMATES  (vectors printed in the paper, metric 1 - |<u_exact, u_hat>|^2)
+==============================================================================
+   2x2 chip, Eq.(7)/(C1)        norm=0.999  1-|<u1,u_hat>|^2 = 0.0268   (fidelity 0.9732)
+   2x2 chip, x-basis |b_x>      norm=1.001  1-|<u1,u_hat>|^2 = 0.0543   (fidelity 0.9457)
+   2x2 chip, y-basis |b_y>      norm=1.001  1-|<u1,u_hat>|^2 = 0.0498   (fidelity 0.9502)
+   2x2 chip, r-basis |b_r>      norm=1.000  1-|<u1,u_hat>|^2 = 0.1570   (fidelity 0.8430)
+   2x2 sim, after 3-bit QPE     norm=1.000  1-|<u1,u_hat>|^2 = 0.0012   (fidelity 0.9988)
+
+   Eq.(8) states F = |<u_QPE|u_max>|^2 = 0.965. Recomputed: with the EXACT u_max F = 0.9988;
+   with the ESTIMATED u_max of Eq.(7) F = 0.9658  -> the 0.965 compares two estimates, not the exact vector.
+
+   Table I (2x2, |c0|,|c1| per iteration): squared sums = [1.0, 1.0, 1.0, 1.001]
+   Table I row 1 = (0.719, 0.695) is recomputed from the CHIP counts of Table III ('110','111'), not the simulator.
+   -> compare with OUR qPCA (E2.3, ECB 2x2): tomographic fidelity 0.997-0.999 for n = 3..7.
+
+==============================================================================
+E2.6  GATES OF THE PUBLIC 2x2 CODE  (github.com/amartinfer/QPCA, Qiskit 0.7.1)
+==============================================================================
+   cu3(theta,phi,lam) in Qiskit 0.7 = controlled[ e^{-i(phi+lam)/2} U3 ]  ('legacy');
+   modern Qiskit CU3 = controlled[ U3 ]  ('modern'). Process fidelity F_pro = |Tr(A^dag B)|^2 / d^2.
+   cu3 #1 (intended C-U^1):  F(legacy, U^1) = 1.000000   controlled: legacy 1.0000, modern 0.9490
+   cu3 #2 (intended C-U^2):  F(legacy, U^2) = 1.000000   controlled: legacy 1.0000, modern 0.2545
+   cu3 #3 (intended C-U^4):  F(legacy, U^4) = 0.487478   controlled: legacy 0.7210, modern 0.0285
+   cu3 #3 equals Z U^4 Z = exp(2 pi i 4 Z rho Z) with F = 1.000000: the off-diagonal
+   (covariance) entry of rho enters with the WRONG SIGN in the U^4 gate of QPCA_QPhE.py.
+   With modern Qiskit semantics the controlled gates are not C-U (F = 0.95, 0.25, 0.03): running the public
+   code unchanged in Qiskit >= 0.8 does NOT reproduce the paper (verified in E2.7).
+
+==============================================================================
+E2.7  REPLICATION OF MARTIN'S PUBLISHED 2x2 RESULTS  (public code, Qiskit 0.7 semantics)
+==============================================================================
+   Table III, iteration 1 (input |+>)   legacy: best printed bit order (q1, q0, q2), TVD = 0.0120, chi-square p = 0.227
+   Table III, iteration 1 (input |+>)   modern: best printed bit order (q1, q0, q2), TVD = 0.5807, chi-square p = 0
+                                        chip counts vs ideal: TVD = 0.265  (noise; modelled in E4)
+   Table V, 3-bit QPE                   legacy: best printed bit order (q2, q1, q0, q3), TVD = 0.0055, chi-square p = 0.196
+   Table V, 3-bit QPE                   modern: best printed bit order (q2, q0, q1, q3), TVD = 0.9082, chi-square p = 0
+                                        chip counts vs ideal: TVD = 0.675  (noise; modelled in E4)
+
+   Effect of the sign error in the U^4 gate (E2.6) on the 3-bit QPE with Martin's input vector:
+     phase register  P(k) Martin code = [0.015, 0.03, 0.004, 0.003, 0.003, 0.006, 0.025, 0.914]
+                     P(k) correct     = [0.015, 0.03, 0.004, 0.003, 0.003, 0.006, 0.025, 0.914]   TVD = 0.00000048
+     -> the phase statistics are NOT affected (true for every input we tried): lambda_hat = 0.875 survives.
+     eigenvector register after post-selecting k=7:  |amplitudes| Martin code = [0.8138, 0.5811]  (paper: [0.8150, 0.5794]),  correct gate = [0.8383, 0.5452]
+     fidelity with u_1 (phases included): Martin code 0.9716  vs  correct gate 0.99985
+     -> the printed eigenvector of the paper is exactly the output of the faulty gate; with the correct U^4
+        the post-selected state would be essentially u_1 (the paper's F uses magnitudes only, so it hides this).
+
+saved in results/e2  (total runtime 26s)

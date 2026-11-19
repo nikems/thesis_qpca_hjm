@@ -1,0 +1,219 @@
+
+==============================================================================
+1.2  FROZEN INPUTS AND PRE-TREATMENT
+==============================================================================
+  source      : European Central Bank - Data Portal (SDMX), dataflow YC
+  series      : YC.B.U2.EUR.4F.G_N_A.SV_C_YM.<IF_maturity>  (Euro-area AAA-rated central government bonds, Svensson instantaneous forward)
+  units       : percent in file -> converted to decimal;  frequency: business daily
+  sha256      : e927167428f0235b...  (downloaded 2026-11-15)
+  rows        : 767   missing values: 0   dates dropped (listwise): 0
+  CALIBRATION : 2022-01-03 -> 2023-12-29  (512 days)  <- covariance, PCA, valuation curve
+  HELD-OUT    : 2024-01-02 -> 2024-12-30  (255 days)  <- only the OOS check at the end
+
+==============================================================================
+1.1  CONTRACT
+==============================================================================
+  ATM caplet on the 3M simple rate L(T0;T0,T1), payoff paid at T1:
+     Pi = delta * max(L - K, 0),   L = (1/P(T0,T1) - 1)/delta
+     V0 = E^Q[ D(0,T1) Pi ],  D(0,T1) = exp(-int_0^T1 r(s) ds)  (RANDOM discount)
+     measure Q = risk-neutral, numeraire = bank account, continuous compounding
+  T0 = 0.25 y, delta = 0.25 y, T1 = 0.5 y, notional = 1 (prices in bp of notional)
+  valuation date (initial curve f(0,.)) = 2023-12-29  (last calibration day)
+  f(0,tau) at 3M/6M/9M/1Y = [3.484900 2.981200 2.573600 2.247800] %  (flat below 3M)
+  P(0,T0) = 0.99132558   P(0,T1) = 0.98334542   K = F(0;T0,T1) = 3.24613 %
+
+  INITIAL CURVE f(0,tau) on 2023-12-29  (12 maturities; -> results/b0/b0_curve.csv, b0_curve.png)
+     maturity   tau (y)   f(0,tau) (%)   P(0,tau)
+         3M      0.25       3.4849     0.991326
+         6M      0.50       2.9812     0.983345
+         9M      0.75       2.5736     0.976541
+         1Y      1.00       2.2478     0.970674
+         2Y      2.00       1.5399     0.952463
+         3Y      3.00       1.4069     0.938533
+         5Y      5.00       1.7638     0.909242
+         7Y      7.00       2.2234     0.873701
+        10Y     10.00       2.6420     0.812207
+        15Y     15.00       2.7495     0.709788
+        20Y     20.00       2.5447     0.621795
+        30Y     30.00       1.9840     0.495802
+
+==============================================================================
+2.1  PCA AND HJM VOLATILITY  (calibration 2022-2023)
+==============================================================================
+
+[2x2]  maturities ['IF_3M', 'IF_6M']   (511 daily changes)
+  2.1.1 C in (%)^2 per year (= decimal^2 x 10^4), divisor N-1, annualised x252:
+          0.5652    0.6302
+          0.6302    1.1412
+        implied vol sqrt(C_jj) = 0.752%, 1.068%  (absolute, per year)
+  2.1.2 eigenvalues (desc, (%)^2 per year) = 1.5461, 0.1603
+        ||CU-U Lambda|| = ~0 (< 10^-12)   ||U^T U - I|| = ~0 (< 10^-12)   -> OK
+        u_1 = [0.540500 0.841300]
+        u_2 = [ 0.841300 -0.540500]
+  2.1.3 R_k = R_1=0.9061, R_2=1.0000
+        rel. reconstruction error ||C-C_k||/||C|| = k=1: 0.10, k=2: ~0 (< 10^-12)
+  2.1.4 sigma_i = sqrt(lambda_i) u_i ;  ||sum_i sigma_i sigma_i^T - C|| = ~0 (< 10^-12) (k = n)
+
+[3x3]  maturities ['IF_3M', 'IF_6M', 'IF_9M']   (511 daily changes)
+  2.1.1 C in (%)^2 per year (= decimal^2 x 10^4), divisor N-1, annualised x252:
+          0.5652    0.6302    0.4523
+          0.6302    1.1412    1.2297
+          0.4523    1.2297    1.6708
+        implied vol sqrt(C_jj) = 0.752%, 1.068%, 1.293%  (absolute, per year)
+  2.1.2 eigenvalues (desc, (%)^2 per year) = 2.9046, 0.4521, 0.0206
+        ||CU-U Lambda|| = ~0 (< 10^-12)   ||U^T U - I|| = ~0 (< 10^-12)   -> OK
+        u_1 = [0.306300 0.615700 0.726000]
+        u_2 = [ 0.797100  0.251100 -0.549200]
+        u_3 = [-0.520500  0.746900 -0.413900]
+  2.1.3 R_k = R_1=0.8600, R_2=0.9939, R_3=1.0000
+        rel. reconstruction error ||C-C_k||/||C|| = k=1: 0.15, k=2: 0.0070, k=3: ~0 (< 10^-12)
+  2.1.4 sigma_i = sqrt(lambda_i) u_i ;  ||sum_i sigma_i sigma_i^T - C|| = ~0 (< 10^-12) (k = n)
+
+[4x4]  maturities ['IF_3M', 'IF_6M', 'IF_9M', 'IF_1Y']   (511 daily changes)
+  2.1.1 C in (%)^2 per year (= decimal^2 x 10^4), divisor N-1, annualised x252:
+          0.5652    0.6302    0.4523    0.2658
+          0.6302    1.1412    1.2297    1.1534
+          0.4523    1.2297    1.6708    1.8513
+          0.2658    1.1534    1.8513    2.2544
+        implied vol sqrt(C_jj) = 0.752%, 1.068%, 1.293%, 1.501%  (absolute, per year)
+  2.1.2 eigenvalues (desc, (%)^2 per year) = 4.7662, 0.8127, 0.0518, 0.0009
+        ||CU-U Lambda|| = ~0 (< 10^-12)   ||U^T U - I|| = ~0 (< 10^-12)   -> OK
+        u_1 = [0.170900 0.438600 0.591000 0.655100]
+        u_2 = [ 0.704000  0.508500 -0.032700 -0.494700]
+        u_3 = [ 0.669400 -0.516100 -0.300400  0.442000]
+        u_4 = [ 0.164600 -0.531600  0.748000 -0.361700]
+  2.1.3 R_k = R_1=0.8463, R_2=0.9906, R_3=0.9998, R_4=1.0000
+        rel. reconstruction error ||C-C_k||/||C|| = k=1: 0.17, k=2: 0.011, k=3: 0.00019, k=4: ~0 (< 10^-12)
+  2.1.4 sigma_i = sqrt(lambda_i) u_i ;  ||sum_i sigma_i sigma_i^T - C|| = ~0 (< 10^-12) (k = n)
+
+==============================================================================
+2.2.3  EXACT REFERENCE PRICES  (closed form, bp of notional)
+==============================================================================
+  [2x2] V(k=1)=3.64128   V(k=2)=3.85845     truncation V(k)-V(k=2): -0.2172, +0.0000
+  [3x3] V(k=1)=3.03983   V(k=2)=3.84989   V(k=3)=3.85845     truncation V(k)-V(k=3): -0.8186, -0.0086, +0.0000
+  [4x4] V(k=1)=2.36544   V(k=2)=3.81656   V(k=3)=3.85841   V(k=4)=3.85845     truncation V(k)-V(k=4): -1.4930, -0.0419, -0.0000, +0.0000
+  note: full-rank 2x2 and 3x3 give the SAME price: with linear interpolation the caplet only
+        sees sigma(tau) for tau <= T1 = 0.5y, i.e. only the 3M/6M block of C (consistency check).
+  reference accuracy: |s^2(GL8) - s^2(GL16)| / s^2 = 0
+
+==============================================================================
+2.2  MONTE CARLO vs EXACT REFERENCE  (M=100000, dt=1/252, seed=20240101 for all k)
+==============================================================================
+  V = exact continuous model, V_h = exact discretised model (same dt), MC must match V_h within its CI
+  [2x2 k=1] MC=3.6422  CI=(3.6092,3.6751)  V=3.6413  V_h=3.6412  z(MC-V_h)=+0.06  rel.err=0.02%  R_k=0.9061  t=1.8s
+  [2x2 k=2] MC=3.8659  CI=(3.8309,3.9008)  V=3.8584  V_h=3.8584  z(MC-V_h)=+0.42  rel.err=0.19%  R_k=1.0000  t=1.3s
+  [3x3 k=1] MC=3.0403  CI=(3.0128,3.0678)  V=3.0398  V_h=3.0397  z(MC-V_h)=+0.04  rel.err=0.02%  R_k=0.8600  t=1.8s
+  [3x3 k=2] MC=3.8611  CI=(3.8262,3.8960)  V=3.8499  V_h=3.8498  z(MC-V_h)=+0.63  rel.err=0.29%  R_k=0.9939  t=1.3s
+  [3x3 k=3] MC=3.8697  CI=(3.8347,3.9046)  V=3.8584  V_h=3.8584  z(MC-V_h)=+0.63  rel.err=0.29%  R_k=1.0000  t=1.3s
+  [4x4 k=1] MC=2.3657  CI=(2.3443,2.3871)  V=2.3654  V_h=2.3653  z(MC-V_h)=+0.03  rel.err=0.01%  R_k=0.8463  t=1.8s
+  [4x4 k=2] MC=3.8315  CI=(3.7969,3.8662)  V=3.8166  V_h=3.8165  z(MC-V_h)=+0.85  rel.err=0.39%  R_k=0.9906  t=1.3s
+  [4x4 k=3] MC=3.8736  CI=(3.8385,3.9087)  V=3.8584  V_h=3.8584  z(MC-V_h)=+0.85  rel.err=0.39%  R_k=0.9998  t=1.3s
+  [4x4 k=4] MC=3.8738  CI=(3.8387,3.9089)  V=3.8584  V_h=3.8584  z(MC-V_h)=+0.86  rel.err=0.40%  R_k=1.0000  t=1.3s
+
+==============================================================================
+BLOCK FULL: 4x4, k=3, dt_main=1/252  -  best classical estimate of the model price (4 maturities, 3 factors, daily steps)
+==============================================================================
+  exact price V(4x4, k=3) = 3.85841 bp ;  most complete model V(4x4, k=4) = 3.85845 bp ;  model reduction error = -0.00004 bp
+  exact discretised price V_h(dt=1/252) = 3.85836 bp
+
+  [FULL] 2.1.4 DRIFT CONDITION (4x4, k=3)
+   continuous (Q, Musiela): mu(tau) = sum_i sigma_i(tau) int_0^tau sigma_i(u) du
+   (a) mu = d/dtau[ 1/2 |int sigma|^2 ]: max rel. residual = 0.00000012
+   (b) h=1/12  discrete no-arbitrage residual = ~0 (< 10^-12) ; max|mu_hat - mu| = 0.0000026
+   (b) h=1/52  discrete no-arbitrage residual = ~0 (< 10^-12) ; max|mu_hat - mu| = 0.00000061
+   (c) Monte-Carlo check E^Q[D(0,T)] = P(0,T): below
+
+  [FULL] 2.2.5 INITIAL-CURVE CONSISTENCY P(0,T) = E^Q[exp(-int r)]  (4x4, k=3, M=200000)
+   h=1/12  T=0.25  P(0,T)=0.99132558  E[D]=0.99132622  SE=0.00000090  z=+0.71  -> CONSISTENT
+   h=1/12  T=0.50  P(0,T)=0.98334542  E[D]=0.98334584  SE=0.0000030  z=+0.14  -> CONSISTENT
+   h=1/12  T=1.00  P(0,T)=0.97067365  E[D]=0.97067840  SE=0.000010  z=+0.46  -> CONSISTENT
+   h=1/252 T=0.25  P(0,T)=0.99132558  E[D]=0.99132369  SE=0.0000012  z=-1.60  -> CONSISTENT
+   h=1/252 T=0.50  P(0,T)=0.98334542  E[D]=0.98334041  SE=0.0000034  z=-1.47  -> CONSISTENT
+   h=1/252 T=1.00  P(0,T)=0.97067365  E[D]=0.97066696  SE=0.000011  z=-0.62  -> CONSISTENT
+
+  [FULL] 2.2.4a CONVERGENCE IN M  (4x4, k=3, dt=1/252) - sampling error, SE ~ 1/sqrt(M)
+   M=   1000  price=3.7088 bp  SE=0.1710  CI=(3.3735,4.0440)  MC-V_h=-0.1496  t=0.01s
+   M=   4000  price=3.8516 bp  SE=0.0895  CI=(3.6763,4.0269)  MC-V_h=-0.0068  t=0.05s
+   M=  16000  price=3.8504 bp  SE=0.0445  CI=(3.7632,3.9377)  MC-V_h=-0.0079  t=0.22s
+   M=  64000  price=3.8623 bp  SE=0.0223  CI=(3.8186,3.9059)  MC-V_h=+0.0039  t=0.88s
+   M= 256000  price=3.8481 bp  SE=0.0112  CI=(3.8262,3.8700)  MC-V_h=-0.0103  t=3.59s
+   fitted log-log slope of SE vs M = -0.494   (theory -0.5)
+   CI COVERAGE: 500 independent replications (M=2000, dt=1/52): 94.6% of 95% CIs contain V_h   (expected 95.0 +- 1.9%)  -> CALIBRATED   t=1.1s
+
+  [FULL] 2.2.4b CONVERGENCE IN dt  (4x4, k=3) - discretisation error
+   exact  dt=1/4     V_h=3.716525 bp   V_h - V = -0.141885 bp
+   exact  dt=1/8     V_h=3.814523 bp   V_h - V = -0.043887 bp
+   exact  dt=1/12    V_h=3.838238 bp   V_h - V = -0.020173 bp
+   exact  dt=1/24    V_h=3.853268 bp   V_h - V = -0.005142 bp
+   exact  dt=1/52    V_h=3.857310 bp   V_h - V = -0.001101 bp
+   exact  dt=1/252   V_h=3.858364 bp   V_h - V = -0.000047 bp
+   exact  dt=1/504   V_h=3.858399 bp   V_h - V = -0.000012 bp
+   exact  dt=1/1008  V_h=3.858408 bp   V_h - V = -0.000003 bp
+   fitted log-log slope |V_h - V| vs dt = 1.971  (order 2: exact curve + exact discrete drift,
+   sigma evaluated at the cell midpoint of u - s; see the B0 explanation)
+   MC     dt=1/12    price=3.8068 bp  SE=0.0177  V_h=3.8382  z(MC-V_h)=-1.78  t=0.02s
+   MC     dt=1/24    price=3.8453 bp  SE=0.0178  V_h=3.8533  z(MC-V_h)=-0.45  t=0.04s
+   MC     dt=1/52    price=3.8503 bp  SE=0.0178  V_h=3.8573  z(MC-V_h)=-0.39  t=0.10s
+   MC     dt=1/252   price=3.8761 bp  SE=0.0179  V_h=3.8584  z(MC-V_h)=+0.99  t=1.38s
+
+  [FULL] COST AT EQUAL PRECISION vs the continuous price V  (sigma_Y = 5.647 bp; R=10)
+   dt = largest step with exact bias |V_h - V| <= eps/10 ; M = ceil((1.96 sigma_Y / eps)^2)
+   eps= 0.20 bp -> dt=1/24   M=    3063  RMSE=0.1056  mean|err|=0.0946  coverage=100%  time=0.001s  (paths x steps = 36,756)
+   eps= 0.10 bp -> dt=1/24   M=   12251  RMSE=0.0629  mean|err|=0.0535  coverage=90%  time=0.005s  (paths x steps = 147,012)
+   eps= 0.05 bp -> dt=1/52   M=   49001  RMSE=0.0210  mean|err|=0.0165  coverage=100%  time=0.047s  (paths x steps = 1,274,026)
+   eps= 0.02 bp -> dt=1/52   M=  306254  RMSE=0.0120  mean|err|=0.0090  coverage=80%  time=0.301s  (paths x steps = 7,962,604)
+   eps = target 95% half-width (expected RMSE ~ eps/1.96); coverage over 10 runs is indicative only.
+
+==============================================================================
+ERROR BUDGET  block FULL: 4x4, k=3, dt=1/252, M=100000  (distinct sources, bp)
+==============================================================================
+  model reduction  V(4x4, k=3) - V(4x4,k=4) = -0.00004   (deterministic: fewer maturities/factors)
+  PCA truncation   V(k=3) - V(k=4) [4x4]  = -0.00004   (deterministic)
+  discretisation   V_h - V                  = -0.00005   (deterministic, O(dt^2))
+  sampling         1.96 * SE                = 0.03507   (random, O(1/sqrt(M)))
+  observed         MC - V_h = +0.01524 ;  MC - V = +0.01519
+
+==============================================================================
+OUT-OF-SAMPLE CHECK  (2024 never used above)
+==============================================================================
+  [2x2] ||C_2024-C_cal||/||C_cal|| = 0.706   lambda_2024/lambda_cal = [0.295000 0.215000]   1-|<u,u_2024>|^2 = [0.001500 0.001500]
+          R_1 cal=0.9061 vs 2024=0.9298   full-rank price with 2024 vol = 2.1324 bp vs calibrated 3.8584 bp
+  [3x3] ||C_2024-C_cal||/||C_cal|| = 0.696   lambda_2024/lambda_cal = [0.310000 0.151000 0.071000]   1-|<u,u_2024>|^2 = [0.004200 0.051200 0.049900]
+          R_1 cal=0.8600 vs 2024=0.9283   full-rank price with 2024 vol = 2.1324 bp vs calibrated 3.8584 bp
+  [4x4] ||C_2024-C_cal||/||C_cal|| = 0.705   lambda_2024/lambda_cal = [0.305000 0.118000 0.123000 0.029000]   1-|<u,u_2024>|^2 = [0.010700 0.093000 0.084500 0.004600]
+          R_1 cal=0.8463 vs 2024=0.9341   full-rank price with 2024 vol = 2.1324 bp vs calibrated 3.8584 bp
+  (same initial curve: the difference is due ONLY to the volatility estimated on a different period)
+
+==============================================================================
+B0 MINIMUM-OUTPUT TABLE  (results/b0/b0_results.csv; prices in bp of notional)
+==============================================================================
+block   study matrix  k    dt      M  price_bp  ci_lo_bp  ci_hi_bp  time_s  ref_bp  ref_disc_bp  abs_err_bp  rel_err  var_explained
+  all    main    2x2  1 1/252 100000    3.6422    3.6092    3.6751  1.8420  3.6413       3.6412      0.0009   0.0002         0.9061
+  all    main    2x2  2 1/252 100000    3.8659    3.8309    3.9008  1.3480  3.8584       3.8584      0.0074   0.0019         1.0000
+  all    main    3x3  1 1/252 100000    3.0403    3.0128    3.0678  1.8160  3.0398       3.0397      0.0005   0.0002         0.8600
+  all    main    3x3  2 1/252 100000    3.8611    3.8262    3.8960  1.3330  3.8499       3.8498      0.0112   0.0029         0.9939
+  all    main    3x3  3 1/252 100000    3.8697    3.8347    3.9046  1.3340  3.8584       3.8584      0.0112   0.0029         1.0000
+  all    main    4x4  1 1/252 100000    2.3657    2.3443    2.3871  1.8440  2.3654       2.3653      0.0002   0.0001         0.8463
+  all    main    4x4  2 1/252 100000    3.8315    3.7969    3.8662  1.3480  3.8166       3.8165      0.0150   0.0039         0.9906
+  all    main    4x4  3 1/252 100000    3.8736    3.8385    3.9087  1.3420  3.8584       3.8584      0.0152   0.0039         0.9998
+  all    main    4x4  4 1/252 100000    3.8738    3.8387    3.9089  1.3450  3.8584       3.8584      0.0154   0.0040         1.0000
+ FULL  conv_M    4x4  3 1/252   1000    3.7088    3.3735    4.0440  0.0120  3.8584       3.8584      0.1496   0.0388         0.9998
+ FULL  conv_M    4x4  3 1/252   4000    3.8516    3.6763    4.0269  0.0460  3.8584       3.8584      0.0068   0.0018         0.9998
+ FULL  conv_M    4x4  3 1/252  16000    3.8504    3.7632    3.9377  0.2180  3.8584       3.8584      0.0080   0.0021         0.9998
+ FULL  conv_M    4x4  3 1/252  64000    3.8623    3.8186    3.9059  0.8810  3.8584       3.8584      0.0039   0.0010         0.9998
+ FULL  conv_M    4x4  3 1/252 256000    3.8481    3.8262    3.8700  3.5870  3.8584       3.8584      0.0103   0.0027         0.9998
+ FULL conv_dt    4x4  3  1/12 100000    3.8068    3.7722    3.8414  0.0170  3.8584       3.8382      0.0516   0.0134         0.9998
+ FULL conv_dt    4x4  3  1/24 100000    3.8453    3.8105    3.8801  0.0380  3.8584       3.8533      0.0131   0.0034         0.9998
+ FULL conv_dt    4x4  3  1/52 100000    3.8503    3.8153    3.8853  0.0970  3.8584       3.8573      0.0081   0.0021         0.9998
+ FULL conv_dt    4x4  3 1/252 100000    3.8761    3.8410    3.9112  1.3760  3.8584       3.8584      0.0177   0.0046         0.9998
+
+==============================================================================
+SUMMARY OF THE PRODUCTION BLOCK
+==============================================================================
+  FULL     4x4 k=3 dt=1/252: V=3.85841  V_h=3.85836  MC=3.8736 +- 0.0351  | model reduction -0.00004, truncation -0.00004, discretisation -0.00005 | coverage 94.6%  slope_M -0.494
+  E6 reference: V(2x2, k=2) with classical PCA = 3.85845 bp
+
+saved in results/b0: b0_results.csv, b0_reference.json, b0_config.json, b0_oos.csv, b0_pca.png;
+  b0_curve.csv, b0_curve.png, b0_exact_dt.csv, b0_bond_check.csv, b0_cost_equal_precision.csv,
+  b0_hjm.png, b0_convergence.png, b0_error_decomposition.png
+total runtime 37s

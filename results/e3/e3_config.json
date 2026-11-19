@@ -1,0 +1,61 @@
+{
+  "experiment": "e3",
+  "run_date_utc": "2026-11-19T15:32:45+00:00",
+  "software": {
+    "python": "3.11.16",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "qiskit": "2.5.2",
+    "qiskit_aer": "0.17.2",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "matplotlib": "3.11.1",
+    "qiskit_ibm_runtime": "0.52.1"
+  },
+  "backend": "qiskit_aer.AerSimulator(method='statevector'), noise-free",
+  "physical_resources_backend": "fake_fez (coupling map + native gates, resources only, no noise)",
+  "datasets": [
+    "martin_3x3",
+    "ecb_3x3"
+  ],
+  "embedding": "blockdiag(C3, 0)",
+  "evolution_time": "t = 2 pi (1 - 2^-n) unless stated",
+  "unitary_realisation": {
+    "main": "exact controlled unitary (UnitaryGate.control)",
+    "comparison": "first-order Trotter, operator-norm error <= 0.01"
+  },
+  "transpilation": {
+    "logical": {
+      "basis_gates": [
+        "rz",
+        "sx",
+        "x",
+        "cx"
+      ],
+      "optimization_level": 3,
+      "seed_transpiler": "n"
+    },
+    "physical": {
+      "backend": "fake_fez",
+      "optimization_level": 3,
+      "seed_transpiler": "n"
+    }
+  },
+  "n_list": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "shots": 8192,
+  "repetitions": 20,
+  "tomography": {
+    "bases": 9,
+    "repetitions": 10,
+    "shots_per_basis": 8192
+  },
+  "seeds": "seed_of(dataset, i, j, rep) = 1e6*(dataset+3) + i*1e4 + j*1e2 + rep",
+  "qpu_time": "none (classical simulation)",
+  "total_runtime_s": 8.5
+}

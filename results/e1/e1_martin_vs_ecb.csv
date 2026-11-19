@@ -1,0 +1,5 @@
+matrix,maturities,trace,lambdas,l1_over_l2,u1,vol_factor_1_pct,source
+martin_2x2,1M/3M,0.000295,"[0.8576, 0.1424]",6.024602171563629,"[0.8347, 0.5508]","[1.328, 0.876]","Martin et al. 2021, Eq.(2) 2x2 sub-block (Wilmott Fig.19.3: daily from 1988, x252, decimal^2/yr)"
+ecb_2x2,3M/6M,0.00017064166514388953,"[0.9061, 0.0939]",9.645174533923198,"[0.5405, 0.8413]","[0.672, 1.046]","ECB AAA forwards, daily changes 2022-2023, annualised (B0)"
+martin_3x3,1M/3M/6M,0.00042100000000000004,"[0.7999, 0.1688, 0.0314]",4.739104925056146,"[0.6686, 0.5156, 0.5358]","[1.227, 0.946, 0.983]","Martin et al. 2021, Eq.(2) (Wilmott Fig.19.3: daily from 1988, x252, decimal^2/yr)"
+ecb_3x3,3M/6M/9M,0.00033772166491957364,"[0.86  , 0.1339, 0.0061]",6.424886813596954,"[0.3063, 0.6157, 0.726 ]","[0.522, 1.049, 1.237]","ECB AAA forwards, daily changes 2022-2023, annualised (B0)"

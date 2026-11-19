@@ -1,0 +1,21 @@
+{
+  "experiment": "e1",
+  "run_date_utc": "2026-11-19T15:32:08+00:00",
+  "software": {
+    "python": "3.11.16",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "qiskit": "2.5.2",
+    "qiskit_aer": "0.17.2",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "matplotlib": "3.11.1",
+    "qiskit_ibm_runtime": "0.52.1"
+  },
+  "inputs": {
+    "martin": "Martin et al. 2021 Eq.(2); code github.com/amartinfer/QPCA (Qiskit 0.7.1)",
+    "ecb": "results/b0/b0_reference.json"
+  },
+  "embedding": "blockdiag(C3, 0)",
+  "evolution_time": "t = 2 pi (as in the paper)",
+  "quantum_execution": "none (classical experiment)"
+}

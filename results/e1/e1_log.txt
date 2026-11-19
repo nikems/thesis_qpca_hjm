@@ -1,0 +1,47 @@
+
+==============================================================================
+E1.1  MATRICES, SPECTRA AND UNITARIES  (paper vs exact recomputation)
+==============================================================================
+sigma_3 (Eq. 2, Wilmott Fig. 19.3, forwards 1M/3M/6M):
+    [0.000189, 0.000097, 0.000091]
+    [0.000097, 0.000106, 0.000101]
+    [0.000091, 0.000101, 0.000126]
+rho_2 = sigma_2/Tr(sigma_2),  Tr = 0.000295
+   ours : [[0.6407, 0.3288], [0.3288, 0.3593]]
+   paper: [[0.6407, 0.3288], [0.3288, 0.3593]]
+   lambda_1: ours 0.857643  paper 0.8576  |diff|=0.000043   u_1: ours [0.8347, 0.5508] paper [0.8347, 0.5508]  1-|<u,u_p>|^2=0.00000000060
+   lambda_2: ours 0.142357  paper 0.1424  |diff|=0.000043   u_2: ours [-0.5508,  0.8347] paper [0.5508, -0.8347]  1-|<u,u_p>|^2=0.00000000060
+U_rho2 = e^{2 pi i rho_2}:  max|ours - paper| = 0.000069   (det U = 1.000000-0.000000j: Tr rho = 1 -> det = e^(2 pi i) = 1, U in SU(2))
+
+rho_4 = blockdiag(sigma_3, 0)/Tr(sigma_3),  Tr = 0.000421
+   max|ours - paper Eq.(9)| = 0.000048
+   lambda: ours 0.799850  paper 0.800  |diff|=0.00015   1-|<u,u_p>|^2=0.000000027
+   lambda: ours 0.168777  paper 0.169  |diff|=0.00022   1-|<u,u_p>|^2=0.00000026
+   lambda: ours 0.031373  paper 0.031  |diff|=0.00037   1-|<u,u_p>|^2=0.00000034
+   lambda: ours 0.000000  paper 0.000  |diff|=0   1-|<u,u_p>|^2=0
+U_rho4 = e^{2 pi i rho_4}:  max|ours - paper| = 0.00053
+
+==============================================================================
+E1.2  MARTIN (WILMOTT) vs THESIS DATA (ECB, B0)
+==============================================================================
+   Wilmott Fig. 19.3: daily changes of 1M/3M/6M forwards from 22-Sep-1988 (1,718 changes), Excel COVAR
+   (divisor N) x 252 / 10000 -> decimal^2 per year: same units as ECB (x252, divisor N-1; ratio N/(N-1) = 1.0006).
+   check: 0.007501 (%^2 per day, Wilmott cell I7) x 252 / 10000 = 0.000189 = sigma_3[1M,1M]
+
+   martin_2x2  [1M/3M]  Tr C = 2.9500 (%)^2/yr  vol sqrt(C_jj) = [1.375, 1.03 ] %  lambda(rho) = [0.8576, 0.1424]  u1 = [0.8347, 0.5508]
+               sigma_1 = sqrt(lambda_1) v_1 = [1.328, 0.876] %
+   ecb_2x2     [3M/6M]  Tr C = 1.7064 (%)^2/yr  vol sqrt(C_jj) = [0.752, 1.068] %  lambda(rho) = [0.9061, 0.0939]  u1 = [0.5405, 0.8413]
+               sigma_1 = sqrt(lambda_1) v_1 = [0.672, 1.046] %
+   martin_3x3  [1M/3M/6M]  Tr C = 4.2100 (%)^2/yr  vol sqrt(C_jj) = [1.375, 1.03 , 1.122] %  lambda(rho) = [0.7999, 0.1688, 0.0314]  u1 = [0.6686, 0.5156, 0.5358]
+               sigma_1 = sqrt(lambda_1) v_1 = [1.227, 0.946, 0.983] %
+   ecb_3x3     [3M/6M/9M]  Tr C = 3.3772 (%)^2/yr  vol sqrt(C_jj) = [0.752, 1.068, 1.293] %  lambda(rho) = [0.86  , 0.1339, 0.0061]  u1 = [0.3063, 0.6157, 0.726 ]
+               sigma_1 = sqrt(lambda_1) v_1 = [0.522, 1.049, 1.237] %
+
+   Differences between the two data sets:
+   * maturities: Wilmott 1M/3M/6M (daily from 1988, x252) vs ECB 3M/6M/9M (daily 2022-23, x252): same units,
+     so traces and volatilities ARE comparable; Wilmott's rates moved more (1M vol 1.37% vs ECB 3M 0.75% per year);
+   * both are dominated by PC1: lambda_1 = 0.858 (Martin) vs 0.906 (ECB) for 2x2, 0.800 vs 0.860 for 3x3;
+   * ECB 3x3 has a very small third eigenvalue (0.006): the 4x4 spectrum is {0.86, 0.13, 0.006, 0}.
+   (spectral gap, phase qubits needed and wrap-around with t = 2 pi are checked in E2 and E3)
+
+saved in results/e1: e1_comparison.csv, e1_martin_vs_ecb.csv, e1_matrices.json

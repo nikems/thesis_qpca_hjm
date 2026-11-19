@@ -1,0 +1,85 @@
+{
+  "run_date_utc": "2026-11-19T15:37:49+00:00",
+  "python": "3.11.16",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "numpy": "2.4.6",
+  "scipy": "1.17.1",
+  "pandas": "3.0.5",
+  "matplotlib": "3.11.1",
+  "data_sha256": "e927167428f0235b0df847c0a6d7afe655474e9bfb76e8d10e60c39ca411bbc3",
+  "rng": "numpy.random.default_rng (PCG64)",
+  "z_dim": 4,
+  "batch": 25000,
+  "blocks": [
+    {
+      "name": "FULL",
+      "suffix": "",
+      "matrix": "4x4",
+      "k": 3,
+      "k_list": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "h_main": 0.003968253968253968,
+      "h_mc": [
+        0.08333333333333333,
+        0.041666666666666664,
+        0.019230769230769232,
+        0.003968253968253968
+      ],
+      "bond_h": [
+        0.08333333333333333,
+        0.003968253968253968
+      ],
+      "drift_h": [
+        0.08333333333333333,
+        0.019230769230769232
+      ],
+      "cov_h": 0.019230769230769232,
+      "seed0": 0,
+      "purpose": "best classical estimate of the model price (4 maturities, 3 factors, daily steps)"
+    }
+  ],
+  "seeds": {
+    "main": 20240101,
+    "per_block": "seed0 + (SEED_MAIN | 1000+j conv_M | 2000+j conv_dt | 50000+r coverage | 7 bonds | 3000+100*i+r cost)"
+  },
+  "M_main": 100000,
+  "dt_main": 0.003968253968253968,
+  "M_list": [
+    1000,
+    4000,
+    16000,
+    64000,
+    256000
+  ],
+  "M_dt": 100000,
+  "dt_exact_list": [
+    0.25,
+    0.125,
+    0.08333333333333333,
+    0.041666666666666664,
+    0.019230769230769232,
+    0.003968253968253968,
+    0.001984126984126984,
+    0.000992063492063492
+  ],
+  "coverage": {
+    "R": 500,
+    "M": 2000
+  },
+  "cost": {
+    "eps_bp": [
+      0.2,
+      0.1,
+      0.05,
+      0.02
+    ],
+    "R": 10
+  },
+  "scheme": "Euler, discrete no-arbitrage drift (Glasserman 3.6.2), left-point sums for r and P",
+  "interpolation": "linear in maturity, flat extrapolation (curve and volatility)",
+  "total_runtime_s": 37.5
+}
