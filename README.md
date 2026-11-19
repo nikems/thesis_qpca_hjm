@@ -11,7 +11,7 @@ Phys. Rev. Research 3, 013167.
 | file | what it does |
 |---|---|
 | `b0_baseline.py` | **B0** classical baseline: covariance of daily forward changes, PCA, HJM volatilities, exact (Black) and Monte Carlo caplet prices, out-of-sample check on 2024 |
-| `e1_replica_martin.py` | **E1** classical replication of Martin et al.: ρ = σ/Tr σ, spectra, U = e^{2πiρ}; Martin (Wilmott) data vs thesis (ECB) data |
+| `e1_replica_martin.py` | **E1** classical replication of Martin et al. Comparison of Martin (Wilmott) data vs thesis (ECB) data |
 | `e2_qpca_2x2.py` |
 | `e3_qpca_4x4.py` |
 | `e4_qpca_noisy.py` |
