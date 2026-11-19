@@ -17,9 +17,9 @@ Phys. Rev. Research 3, 013167.
 | `e4_qpca_noisy.py` |
 | `e5_qpca_harw.py` |
 | `e6_qpca_pricing.py` |
-| `download_data.py` | documents how the ECB data were downloaded (not part of the pipeline) |
+| `download_data.py` | Data download|
 | `data/` | frozen input data (ECB Data Portal, dataflow YC), with sha256 in `dataset_metadata.json` |
-| `results/` | outputs of every experiment: CSV tables, figures, `<exp>_config.json`, `<exp>_log.txt` |
+| `results/` | outputs of every experiment: CSV tables, figures.
 | `QPCA Martin/` | original code of Martin et al. ([github.com/amartinfer/QPCA](https://github.com/amartinfer/QPCA), Qiskit 0.7.1), kept unchanged as reference for the replication |
 
 ## How to run
