@@ -1,5 +1,0 @@
-table,semantics,best_bit_order,tvd,chi2_p
-Table VI iteration 1 (uniform input),legacy,q2 q1 q0,0.011006656867345747,0.3274215891817946
-Table VI iteration 1 (uniform input),modern,q1 q2 q0,0.2008089571830144,0.0
-Table VI iteration 4 (state in the code),legacy,q2 q1 q0,0.012800926582147744,0.11211305942375992
-Table VI iteration 4 (state in the code),modern,q2 q1 q0,0.46354976585494345,0.0
