@@ -1,0 +1,13 @@
+maturity_code,maturity_years
+IF_3M,0.25
+IF_6M,0.5
+IF_9M,0.75
+IF_1Y,1.0
+IF_2Y,2.0
+IF_3Y,3.0
+IF_5Y,5.0
+IF_7Y,7.0
+IF_10Y,10.0
+IF_15Y,15.0
+IF_20Y,20.0
+IF_30Y,30.0

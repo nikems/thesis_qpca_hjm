@@ -1,0 +1,28 @@
+{
+  "source": "European Central Bank - Data Portal (SDMX), dataflow YC",
+  "series_key_template": "YC.B.U2.EUR.4F.G_N_A.SV_C_YM.<IF_maturity>",
+  "curve": "Euro-area AAA-rated central government bonds, Svensson instantaneous forward",
+  "data_type": "Instantaneous forward rate (IF_*)",
+  "maturities_years": [
+    0.25,
+    0.5,
+    0.75,
+    1,
+    2,
+    3,
+    5,
+    7,
+    10,
+    15,
+    20,
+    30
+  ],
+  "start_period": "2022-01-01",
+  "end_period": "2024-12-31",
+  "first_date": "2022-01-03",
+  "last_date": "2024-12-30",
+  "n_business_days": 767,
+  "units": "percent (raw)",
+  "download_utc": "2026-11-15T15:56:49.876506Z",
+  "raw_sha256": "e927167428f0235b0df847c0a6d7afe655474e9bfb76e8d10e60c39ca411bbc3"
+}
